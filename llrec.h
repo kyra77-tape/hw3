@@ -13,6 +13,8 @@ struct Node
     Node *next;
 
     Node(int v, Node* n) : val(v), next(n) {}
+
+  
 };
 
 
@@ -83,7 +85,18 @@ Node* llfilter(Node* head, Comp pred)
     //*********************************************
     // Provide your implementation below
     //*********************************************
+    if(head == nullptr){
+      return nullptr;
+    }
 
+    Node* rest = llfilter(head->next, pred);
+    if(pred(head->val)){
+      delete head;
+      return rest;
+    }
+
+    head->next = rest;
+    return head;
 
 }
 

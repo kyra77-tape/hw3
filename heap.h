@@ -2,6 +2,8 @@
 #define HEAP_H
 #include <functional>
 #include <stdexcept>
+#include <vector>
+#include <cstddef>
 
 template <typename T, typename PComparator = std::less<T> >
 class Heap
@@ -61,6 +63,12 @@ public:
 
 private:
   /// Add whatever helper functions and data members you need below
+  std::vector<T> data_;
+  int m_;
+  PComparator comp_;
+
+  void bubbleUp(size_t index);
+  void bubbleDown(size_t index);
 
 
 
@@ -68,27 +76,36 @@ private:
 };
 
 // Add implementation of member functions here
+template <typename T, typename PComparator>
+Heap<T, PComparator>::Heap(int m, PComparator c)
+  : data_(), m_(m), comp_(c)
+{
+  if (m < 2) {
+    throw std::invalid_argument("Heap must have at least 2 children per node");
+  }
+}
+
+template <typename T, typename PComparator>
+Heap<T, PComparator>::~Heap()
+{
+}
+template <typename T, typename PComparator>
+void Heap<T, PComparator>::push(const T& item)
+{
+  data_.push_back(item);
+  bubbleUp(data_.size() - 1);
+}
 
 
 // We will start top() for you to handle the case of 
 // calling top on an empty heap
 template <typename T, typename PComparator>
-T const & Heap<T,PComparator>::top() const
+T const & Heap<T, PComparator>::top() const
 {
-  // Here we use exceptions to handle the case of trying
-  // to access the top element of an empty heap
-  if(empty()){
-    // ================================
-    // throw the appropriate exception
-    // ================================
-
-
-  }
-  // If we get here we know the heap has at least 1 item
-  // Add code to return the top element
-
-
-
+    if (empty()) {
+        throw std::underflow_error("Heap is empty");
+    }
+    return data_[0];
 }
 
 
@@ -102,13 +119,86 @@ void Heap<T,PComparator>::pop()
     // throw the appropriate exception
     // ================================
 
+    throw std::underflow_error("Cannot pop from an empty heap");
+
 
   }
 
+  if (data_.size() == 1) {
+    data_.pop_back();
+    return;
+  }
+
+  data_[0] = data_.back();
+  data_.pop_back();
+
+  bubbleDown(0);
 
 
 }
 
+template <typename T, typename PComparator>
+bool Heap<T, PComparator>::empty() const
+{
+  return data_.empty();
+}
+
+template <typename T, typename PComparator>
+size_t Heap<T, PComparator>::size() const
+{
+  return data_.size();
+}
+
+template <typename T, typename PComparator>
+void Heap<T, PComparator>::bubbleUp(size_t index)
+{
+  while (index > 0) {
+    size_t parent = (index - 1) / m_;
+
+    if (comp_(data_[index], data_[parent])) {
+      T temp = data_[index];
+      data_[index] = data_[parent];
+      data_[parent] = temp;
+
+      index = parent;
+    } else {
+      break;
+    }
+  }
+}
+
+ template <typename T, typename PComparator>
+void Heap<T, PComparator>::bubbleDown(size_t index)
+{
+  size_t n = data_.size();
+
+  while (true) {
+    size_t firstChild = m_ * index + 1;
+    size_t best = index;
+
+    for (size_t j = 0; j < static_cast<size_t>(m_); ++j) {
+      size_t child = firstChild + j;
+
+      if (child >= n) {
+        break;
+      }
+
+      if (comp_(data_[child], data_[best])) {
+        best = child;
+      }
+    }
+
+    if (best == index) {
+      break;
+    }
+
+    T temp = data_[index];
+    data_[index] = data_[best];
+    data_[best] = temp;
+
+    index = best;
+  }
+}
 
 
 #endif
